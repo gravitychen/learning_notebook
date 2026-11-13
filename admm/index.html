@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADMM · 图像讲义</title><link rel="stylesheet" href="style.css"><script type="module" src="app.mjs"></script></head>
+<body>
+<header class="toolbar"><a class="brand" href="#">ADMM <span>/ 图像讲义</span></a><nav><button id="open-map">知识金字塔</button><button id="open-lesson" aria-pressed="true">逐页讲解</button><button id="open-lab" aria-pressed="false">迭代实验</button></nav></header>
+<main>
+<section id="lecture" aria-label="逐页讲义">
+<article class="slide" aria-labelledby="lesson-title">
+<div class="slide-heading"><p id="lesson-path" class="eyebrow"></p><h1 id="lesson-title"></h1></div>
+<div id="slide-visual" class="slide-visual"></div>
+<div id="slide-equation" class="slide-equation"></div><p id="slide-caption" class="slide-caption"></p>
+<div class="slide-bottom"><span>ADMM / 图像去模糊</span><label>掌握情况 <select id="mastery"><option value="review">待复习</option><option value="known">已掌握</option><option value="partial">有点模糊</option><option value="learn">需要重学</option></select></label><span id="slide-number"></span></div>
+</article>
+<div class="pager"><button id="previous-node">← 上一页</button><div id="slide-dots" aria-label="选择讲义页"></div><button id="next-node">下一页 →</button></div>
+<details id="lesson-details" class="notes"><summary>展开推导与代码</summary><div id="lesson-content"></div></details>
+</section>
+<dialog id="map-dialog"><div class="dialog-head"><h2>知识金字塔</h2><button id="close-map" aria-label="关闭知识金字塔">关闭 ×</button></div><p class="muted">点击层级，展开知识点，再选择要复习的内容。</p><div id="pyramid"></div><nav id="nodes" aria-label="本层知识点"></nav><p id="progress"></p></dialog>
+<section id="experiment" class="experiment" hidden>
+<div class="section-head"><h1>ADMM 迭代实验</h1><span class="eyebrow">固定图像 · 可回退 · 实时计算</span></div>
+<div class="equation">min<sub>x</sub> ½ ‖Hx − b‖₂² + λ ‖Dx‖₁</div>
+<div class="parameters"><label>正则化 λ <output id="lambda-value">0.015</output><input id="lambda" type="range" min="0.001" max="0.06" step="0.001" value="0.015"></label><label>罚参数 ρ <output id="rho-value">0.10</output><input id="rho" type="range" min="0.05" max="2" step="0.05" value="0.1"></label></div>
+<nav class="mode-switch" aria-label="选择迭代模式"><button id="overview-mode" aria-pressed="true">整体迭代结果</button><button id="detail-mode" aria-pressed="false">细节公式迭代</button></nav>
+<div id="overview-panel">
+<div class="controls"><button id="back">← 回退</button><button id="play" class="primary">播放</button><button id="step">单步 →</button><button id="reset">重置</button><span id="iteration" aria-live="polite">第 0 轮</span></div>
+<label class="scrub">查看轮次 <input id="timeline" type="range" min="0" max="0" value="0"><output id="stop-status"></output></label>
+<div id="images" class="images"></div>
+<div class="metrics"><div><small>原始残差 ‖Dx − z‖₂</small><strong id="primal"></strong></div><div><small>对偶残差 ‖ρDᵀΔz‖₂</small><strong id="dual"></strong></div><div><small>目标函数</small><strong id="objective"></strong></div><div><small>PSNR / 对照真值</small><strong id="psnr"></strong></div></div>
+<figure class="chart"><canvas id="chart" width="900" height="200" aria-label="两项残差与停止阈值之比"></canvas><figcaption>绿色：原始残差；红色：对偶残差。两条 log₁₀ 曲线都低于 0 才满足停止条件。</figcaption></figure>
+</div>
+<section id="detail-panel" hidden aria-labelledby="detail-title">
+<p class="muted">每轮依次经过 x → Dx → v → z → r → u 六个小步；旧值保留到本轮更新它为止。两种模式共用参数与已完成轮次。</p>
+<div class="controls"><button id="detail-back">← 上一步</button><button id="detail-next" class="primary">下一步 →</button><button id="detail-reset">从头开始</button><span id="detail-position" aria-live="polite"></span></div>
+<section class="formula-board" aria-labelledby="formula-board-title"><h2 id="formula-board-title">ADMM 三大更新公式</h2><p>红色下括号标出当前小步；k 是上一轮的轮次。</p><div id="formula-board"></div></section>
+<div class="direction"><span>显示梯度方向：</span><button id="dir-x" aria-pressed="true">水平 Dₓ</button><button id="dir-y" aria-pressed="false">垂直 Dᵧ</button></div>
+<article class="detail-slide"><h2 id="detail-title"></h2><div id="detail-formula" class="slide-equation"></div><div id="detail-extra" class="detail-extra"></div>
+<details id="x-derivation" class="derivation" hidden>
+<summary>这一步如何推导？先看 x 要实现什么<span aria-hidden="true"> ↓</span></summary>
+<div class="derivation-body">
+<h3>找一张既解释观测、又接近目标梯度的图像</h3>
+<h4>我们实际看到了什么？</h4>
+<p>相机给我们的是模糊、带噪声的观测 b。x 是正在猜测的清晰图像，H 是已知的模糊过程。把 x 送进 H，得到“如果这张猜测是真的，相机应该看到什么”——也就是 Hx。</p>
+<div class="meaning-flow" aria-label="成像关系"><span>候选清晰图 x</span><b>→ H 模糊 →</b><span>预测观测 Hx</span><b>↔ 比较 ↔</b><span>实际观测 b</span></div>
+<p>下方左图是固定的 b，右图是本轮求出的新 x。它们不是要直接长得一样；应该比较的是 Hx 与 b。</p>
+<h4>这一轮希望图像发生什么变化？</h4>
+<p>一方面，让预测观测 Hx 接近 b；另一方面，让图像的实际梯度 Dx 接近当前给出的目标 zᵏ − uᵏ。下方中图展示这个目标的一个方向，求解时两个方向一起参与。</p>
+<p>z 是辅助梯度，u 是协调 Dx 与 z 的算法修正量；它们不是场景亮度，也不是真实边缘的标准答案。新 x 要在两个要求之间做权衡，而不是满足其中一个就结束。</p>
+<div class="meaning-flow"><span>观测要求：Hx ≈ b</span><b>共同约束</b><span>梯度目标：Dx ≈ zᵏ − uᵏ</span><b>→</b><span>本轮新图 xᵏ⁺¹</span></div>
+<h4>怎样把这两个要求变成可计算的目标？</h4>
+<p>分别用平方误差衡量“离要求还有多远”，再相加。ρ 越大，本轮越重视当前梯度目标。此时 zᵏ、uᵏ 固定，只调整 x。</p>
+<div class="derivation-equation">minₓ {½‖Hx − b‖₂² + ρ/2 ‖Dx − (zᵏ − uᵏ)‖₂²}</div>
+<p>第一项衡量预测观测的偏差；第二项衡量梯度目标的偏差。导数告诉我们，改变每个像素会怎样改变这些代价；最优位置的两部分导数相互平衡，不要求两项误差分别为零。</p>
+<details id="transpose-derivation" class="derivation">
+<summary>为什么误差通过 Hᵀ 回到像素，而不是 H？<span aria-hidden="true"> ↓</span></summary>
+<div class="derivation-body">
+<h3>先看一个像素怎样影响相机，再看误差怎样汇总回来</h3>
+<h4>模糊把一个像素的影响扩散到哪里？</h4>
+<p>想象只把候选图像中的一个像素 xⱼ 调亮一点。在模糊成像中，相机上的一片位置都会随之变亮。Hᵢⱼ 就是这个像素对第 i 个观测的影响权重。这里 j 是像素编号，i 是观测编号，均不是迭代轮次。</p>
+<div class="meaning-flow"><span>一个像素 xⱼ 的变化</span><b>→ 按 H 的第 j 列扩散 →</b><span>多个观测发生变化</span></div>
+<h4>我们希望用观测误差决定什么？</h4>
+<p>现在各个位置已经有预测偏差 Hx − b。我们想知道：“如果调亮 xⱼ，总平方误差会增加还是减少，变化有多大？”这才是对 xⱼ 求导的含义。</p>
+<p>需要把每个观测的误差，乘上该像素影响它的权重，再汇总。不是把模糊过程倒放，也不是直接恢复出一个真实像素。</p>
+<div class="meaning-flow"><span>各处观测误差 (Hx − b)ᵢ</span><b>× 同一影响权重 Hᵢⱼ，再求和 →</b><span>像素 xⱼ 的导数</span></div>
+<h4>这种汇总为什么叫转置？</h4>
+<p>固定像素 j，遍历观测 i，取的是 H 的第 j 列。将这一列用作一行，与观测误差做加权求和，就是 Hᵀ 的第 j 行。对所有像素同时做，就得到 Hᵀ(Hx − b)。</p>
+<p>若像素有 n 个、观测有 m 个，H 为 m × n。误差是 m 维，回到像素的导数应为 n 维，Hᵀ 的 n × m 尺寸也与这个方向一致。</p>
+<details class="derivation">
+<summary>查看数学依据：把这次汇总写成链式法则<span aria-hidden="true"> ↓</span></summary>
+<div class="derivation-body">
+<div class="derivation-equation">(Hx)ᵢ = Σⱼ Hᵢⱼxⱼ，∂(Hx)ᵢ/∂xⱼ = Hᵢⱼ</div>
+<div class="derivation-equation">∂/∂xⱼ [½Σᵢ(Hx − b)ᵢ²] = Σᵢ(Hx − b)ᵢHᵢⱼ</div>
+<div class="derivation-equation derivation-result">ΣᵢHᵢⱼ(Hx − b)ᵢ = [Hᵀ(Hx − b)]ⱼ</div>
+<p>平方求导的 2 与 ½ 抵消；每个观测再乘它对 xⱼ 的导数 Hᵢⱼ。转置来自这组索引关系，而不是把 H 取逆。</p>
+</div></details>
+<h4>回到本页代码，应该看到什么？</h4>
+<p>本例 H 是对称的热扩散模糊，因此 Hᵀ = H。Python 中的实数频率响应 h_hat 同时表示二者；一般不对称算子则不能这样简化。Hᵀ(Hx − b) 表示代价的导数，不直接等于更新后的 x；实际 x 更新还同时考虑梯度目标。</p>
+</div></details>
+<details class="derivation">
+<summary>查看数学依据：从两个要求得到正规方程<span aria-hidden="true"> ↓</span></summary>
+<div class="derivation-body">
+<p>固定 b、H、D、ρ、zᵏ、uᵏ，对候选 x 求导。此处的 ∇ₓ 是目标函数对图像变量的导数，与图像空间差分 Dx 不同。</p>
+<div class="derivation-equation">∇ₓ [½‖Hx − b‖₂²] = Hᵀ(Hx − b)</div>
+<div class="derivation-equation">∇ₓ [ρ/2 ‖Dx − zᵏ + uᵏ‖₂²] = ρDᵀ(Dx − zᵏ + uᵏ)</div>
+<p>Dᵀ 与 Hᵀ 同样来自链式法则，将梯度空间的偏差汇总回图像空间。两部分相加为零：</p>
+<div class="derivation-equation">Hᵀ(Hx − b) + ρDᵀ(Dx − zᵏ + uᵏ) = 0</div>
+<div class="derivation-equation">HᵀHx − Hᵀb + ρDᵀDx − ρDᵀzᵏ + ρDᵀuᵏ = 0</div>
+<p>含 x 的留在左边，其余移到右边；求出的最优 x 记为 xᵏ⁺¹：</p>
+<div class="derivation-equation derivation-result">(HᵀH + ρDᵀD)xᵏ⁺¹ = Hᵀb + ρDᵀ(zᵏ − uᵏ)</div>
+<p>ρ &gt; 0 时目标为凸二次函数，梯度为零即达到全局最小值。本例 H 的频率响应均大于零，因此解唯一。右侧 zᵏ − uᵏ 的符号来自移项，含义没有变化。</p>
+</div></details>
+<h4>实际怎样算，算完又看什么？</h4>
+<p>本例 H、D 使用相同的周期边界，可以用 FFT 将整组正规方程变成各频点的除法，再逆 FFT 得到新图像。下方 Python 的 numerator、denominator 和 x_next 对应这三个环节。</p>
+<p>点击下方图像选像素，再点“代入并计算”：先看两个方向的目标梯度，再看频率空间分子、分母，最后看逆 FFT 后的亮度。频点 [p,q] 不等于像素 [i,j]，一个频点会影响整张图。</p>
+<p>完成一轮后，可以在整体模式观察重建及残差；观测偏差与梯度偏差不保证每小步同时下降。真值只供对照，不参与更新。</p>
+</div></details>
+<details id="z-derivation" class="derivation" hidden>
+<summary>软阈值这一步如何推导？先看 z 要实现什么<span aria-hidden="true"> ↓</span></summary>
+<div class="derivation-body">
+<h3>让辅助梯度更稀疏，同时保留当前输入中的明显变化</h3>
+<h4>梯度图里，什么对应平坦区域和边缘？</h4>
+<p>x 是图像亮度，Dx 是相邻像素的亮度差。平坦区域通常变化小，物体边界通常变化大。下方红蓝色显示梯度的正负方向，颜色深浅表示幅度；它不是物体本身的颜色。</p>
+<p>本例假设清晰图像由较多平坦区域和较少边界构成。因此，我们希望减少细碎起伏，并保留明显变化。但小梯度也可能是真实细节，大梯度也可能来自噪声；这是先验假设，不是真假边缘的判别器。</p>
+<h4>z 和 v 分别在这个目标中做什么？</h4>
+<p>Dx 是当前图像实际产生的梯度；z 是用来承接稀疏先验的一份辅助梯度，不是另一张亮度图。前一步已将新梯度与旧修正量合成输入 vᵏ⁺¹ = Dxᵏ⁺¹ + uᵏ；u 是算法协调量，所以 v 不能直接当成纯粹的图像梯度。</p>
+<div class="meaning-flow"><span>新图像 xᵏ⁺¹</span><b>→ 差分 D →</b><span>实际梯度 Dxᵏ⁺¹</span><b>+ 旧 uᵏ →</b><span>输入 vᵏ⁺¹</span><b>→ 软阈值 →</b><span>辅助梯度 zᵏ⁺¹</span></div>
+<p>下方左图是 v，右图是新 z；两者使用相同色标，可以直接比较哪些变化被削弱。z 的更新不会立即改写当前图像 x；它会通过后续 u 更新和下一轮 x 求解影响重建。</p>
+<h4>怎样兼顾“更稀疏”和“别偏离输入太远”？</h4>
+<p>一方面，希望 z 的许多分量为零，表达大部分区域平坦的假设；另一方面，不能把输入 v 的变化全部抹掉。用两个代价表达这两个要求：</p>
+<div class="derivation-equation">min_z {λ|z| + ρ/2 (z − v)²}</div>
+<p>这里暂时只看同一像素、同一方向的一个数 z、v。第一项鼓励 z 靠近零，第二项惩罚它远离 v；完整数组的各分量独立做相同计算，这是本例各向异性 TV 的性质。</p>
+<div class="meaning-flow"><span>z 向 0 靠近：绝对值代价减小</span><b>权衡</b><span>z 离 v 更远：平方偏差代价增大</span><b>→</b><span>选总代价最低的 z</span></div>
+<h4>这个权衡会让数值怎样变化？</h4>
+<figure class="soft-function-figure"><svg id="soft-function" viewBox="0 0 640 365" role="img" aria-labelledby="soft-function-heading soft-function-note"></svg><figcaption><strong id="soft-function-heading">soft 函数：小输入归零，大输入向零收缩</strong><p id="soft-function-note" aria-live="polite"></p></figcaption></figure>
+<p>以默认 λ = 0.015、ρ = 0.10 为例，阈值为 0.15。比较以下三种输入：</p>
+<table class="inspect-table"><thead><tr><th>输入 v</th><th>输出 z</th><th>发生了什么</th></tr></thead><tbody><tr><td>0.30</td><td>0.15</td><td>正的大变化向零缩小</td></tr><tr><td>0.08</td><td>0</td><td>小变化归零</td></tr><tr><td>−0.30</td><td>−0.15</td><td>负的大变化也向零缩小</td></tr></tbody></table>
+<p>大输入保留符号，但幅度减小；小输入直接归零。这解释了希望在梯度图上看到的变化，也解释了为什么真实细节可能被削弱。下面再回答：收缩量为什么恰好是 λ/ρ？</p>
+<details class="derivation">
+<summary>查看数学依据：为什么阈值是 λ/ρ？<span aria-hidden="true"> ↓</span></summary>
+<div class="derivation-body">
+<p>固定 xᵏ⁺¹、uᵏ，原目标中只依赖 x 的数据项是常量，可省略：</p>
+<div class="derivation-equation">zᵏ⁺¹ = argmin_z {λ‖z‖₁ + ρ/2 ‖z − vᵏ⁺¹‖₂²}</div>
+<p>‖Dxᵏ⁺¹ − z + uᵏ‖₂² = ‖z − vᵏ⁺¹‖₂²，因为平方范数整体换号不变。各向异性 TV 可以拆成各分量的 λ|z| + ρ/2(z − v)²；下面 z、v 仅表示一个分量。</p>
+<h4>正的大输入：让最小点落在 z &gt; 0</h4>
+<div class="derivation-equation">|z| = z ⇒ λ + ρ(z − v) = 0 ⇒ z = v − λ/ρ</div>
+<p>只有 v &gt; λ/ρ，候选解才满足 z &gt; 0。</p>
+<h4>负的大输入：让最小点落在 z &lt; 0</h4>
+<div class="derivation-equation">|z| = −z ⇒ −λ + ρ(z − v) = 0 ⇒ z = v + λ/ρ</div>
+<p>只有 v &lt; −λ/ρ，候选解才满足 z &lt; 0。</p>
+<h4>小输入：为什么最小点停在零？</h4>
+<p>|z| 在零点有尖角，普通导数不存在，其次梯度为区间 [−1, 1]。凸目标达到最小值的条件是总次梯度包含 0：</p>
+<div class="derivation-equation">z = 0 时：0 ∈ λ[−1, 1] − ρv<br>⇔ ρv ∈ [−λ, λ] ⇔ |v| ≤ λ/ρ</div>
+<p>所以阈值两端也取零。ρ &gt; 0 使标量目标严格凸，每个分量都有唯一最优解。合并三个区间，并恢复数组与轮次：</p>
+<div class="derivation-equation derivation-result">zᵏ⁺¹ = sign(vᵏ⁺¹) · max(|vᵏ⁺¹| − λ/ρ, 0)<br>= soft(Dxᵏ⁺¹ + uᵏ, λ/ρ)</div>
+<p>sign、绝对值、max 都逐分量计算。λ/ρ 来自解最优条件，不是额外选出的第三个参数。</p>
+</div></details>
+<h4>回到 Python 和真实图像，怎样核对？</h4>
+<p>下方 <code>np.sign(v) * np.maximum(np.abs(v) - lam / rho, 0)</code> 依次对应保留方向、缩小幅度、将小于阈值的幅度截为零。</p>
+<p>点选下方像素并“代入并计算”，对照实际 v、当前 λ/ρ 和新 z，再观察两幅梯度图同一位置的变化。实际输入来自当前轮次，可能与上面的默认示例不同。</p>
+<p>接下来比较 Dxᵏ⁺¹ 与新 z 的偏差，再更新 u，使下一轮继续协调。软阈值只是每轮的一部分，不等于对最终图像做完了一次去噪。</p>
+<p class="muted">本页使用各向异性 TV。各向同性 TV 会把两个方向一起做向量收缩，不能直接套用这里的逐分量公式。</p>
+</div></details>
+<div id="detail-visual" class="slide-visual"></div><p id="detail-explain" class="slide-caption"></p></article>
+<section class="step-inspector" aria-label="当前小步的代码与数值">
+<div class="inspector-code"><h3>这一步的代码</h3>
+<div class="code-tabs" role="tablist" aria-label="代码语言"><button id="code-python" type="button" role="tab" aria-selected="true" aria-controls="inspect-code-panel" data-language="python">Python / NumPy</button><button id="code-javascript" type="button" role="tab" aria-selected="false" aria-controls="inspect-code-panel" tabindex="-1" data-language="javascript">JavaScript</button></div>
+<div id="inspect-code-panel" role="tabpanel" aria-labelledby="code-python" tabindex="0"><p id="inspect-code-label" class="muted"></p><pre><code id="inspect-code"></code></pre></div>
+<a href="solver.py" download="admm_solver.py">下载完整 Python 实现 ↓</a></div>
+<div class="inspector-data"><h3>代入实际数据</h3><p class="muted">点击任意图像选择像素，或输入坐标，再点“代入并计算”。</p>
+<div class="coordinate-controls"><label>像素行 i <input id="inspect-row" type="number" min="0" max="63" step="1" value="20"></label><label>像素列 j <input id="inspect-col" type="number" min="0" max="63" step="1" value="29"></label></div>
+<div id="frequency-controls" class="coordinate-controls" hidden><label>频率行 p <input id="inspect-freq-row" type="number" min="0" max="63" step="1" value="2"></label><label>频率列 q <input id="inspect-freq-col" type="number" min="0" max="63" step="1" value="3"></label></div>
+<button id="inspect-calculate" class="primary">代入并计算</button><p id="inspect-context" class="muted" aria-live="polite"></p><p id="inspect-note" class="muted"></p>
+<div id="inspect-output" hidden><table class="inspect-table"><thead><tr><th>变量 / 中间量</th><th>本次实际数值</th></tr></thead><tbody id="inspect-values"></tbody></table><pre id="inspect-calculation" class="substitution" aria-live="polite"></pre></div>
+</div></section>
+<details class="notes"><summary>符号表与迭代顺序</summary><p>x：重建图像；b：观测；H：模糊算子；Dx：水平与垂直梯度；z：辅助梯度；r=Dx−z：约束偏差；y：拉格朗日乘子；u=y/ρ：缩放乘子；v=Dx+u：软阈值输入；λ：TV 正则权重；ρ：约束罚参数。上标 k 表示轮次，不表示乘方。</p><p>每轮依次求 x、Dx、v、z、r、u。图像展示选中方向；求解器始终同时使用两个方向。红色为正，蓝色为负，白色为零；色标固定以便跨步比较。</p></details>
+</section>
+<details class="notes"><summary>模型约定、更新公式与完整代码</summary><p>64 × 64 灰度图，周期边界，已知热扩散模糊算子，各向异性 TV。调参重新初始化；播放达到停止条件或 150 轮暂停。λ 改变先验强度，ρ 改变协调过程。目标值不保证逐轮单调。</p><div id="updates"></div><a href="solver.mjs" target="_blank" rel="noopener">完整求解器 ↗</a><pre><code id="source"></code></pre></details>
+</section>
+<footer><span id="sync" role="status">正在读取学习记录…</span><a href="https://web.stanford.edu/~boyd/papers/admm_distr_stats.html" target="_blank" rel="noopener">理论参考 / Boyd 等 §3–4 ↗</a></footer>
+</main></body></html>

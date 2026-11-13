@@ -24,6 +24,7 @@
 ## 主题
 
 - [ADMM：图像去模糊与优化](admm/README.md) · [在线学习](https://admm-learning-lab-gravity.cutetoucan2.chatgpt.site) · [Python 实现](admm/solver.py)
+- [LLM：模型训练、Agent 与 Harness](llm/README.md) · 从 Transformer 之后的预训练、后训练，到 Codex / Claude Code 的树状学习大纲
 
 ## ADMM 当前版本
 

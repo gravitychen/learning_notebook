@@ -1,5 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+# Locally downloaded survey: arXiv license does not grant republication.
+llm/papers/2303.18223_llm-overview.pdf
 *.py[codz]
 *$py.class
 

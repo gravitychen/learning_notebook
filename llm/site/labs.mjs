@@ -1,5 +1,6 @@
 import {attention,fixture} from './math.mjs';
 import {renderDiagram} from './visuals.mjs';
+import {locateLabStep} from './architecture.mjs';
 let query=2,q=[1,1],causal=true,phase=0;
 const formulas=['s_j = qᵢ · kⱼ','sⱼ ← sⱼ / √d_k','sⱼ ← −∞（若 j > i 且开启因果掩码）','aᵢ = softmax(s)','oᵢ = Σⱼ aᵢⱼ vⱼ'];
 const phases=['匹配：逐个点乘','缩放：保持分数尺度','可见范围：屏蔽未来','分配：得到权重','读取：汇总 V'];
@@ -24,6 +25,7 @@ export function renderLab(host){
     [0,1].forEach(d=>{$('q'+d).value=q[d];$('q'+d+'-value').textContent=q[d].toFixed(1);});
     $('lab-position').textContent=`第 ${phase+1} / 5 小步 · ${phases[phase]}`;$('lab-back').disabled=phase===0;$('lab-next').disabled=phase===4;
     root.querySelectorAll('.lab-formula').forEach(p=>p.classList.toggle('active',Number(p.dataset.phase)===phase));
+    locateLabStep(phase);
     renderDiagram(['score','score','mask','weights','values'][phase],$('lab-visual'),t,{query});
     const v=[`q = ${vec(q)}\n点积 = ${vec(t.dot[query])}`,`点积 / √2 = ${vec(t.scores[query])}`,`掩码后分数 = ${vec(t.masked[query])}`,`A 的第 ${query+1} 行 = ${vec(t.A[query])}`,`贡献 1 = ${vec(t.contributions[query][0])}\n贡献 2 = ${vec(t.contributions[query][1])}\n贡献 3 = ${vec(t.contributions[query][2])}\nO 的第 ${query+1} 行 = ${vec(t.O[query])}`];
     $('lab-readout').textContent=v[phase];$('lab-readout').dataset.weights=JSON.stringify(t.A[query]);$('lab-readout').dataset.output=JSON.stringify(t.O[query]);

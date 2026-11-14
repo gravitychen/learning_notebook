@@ -3,6 +3,10 @@ import {spawnSync} from 'node:child_process';
 import {attention,fixture} from './math.mjs';
 import {lesson,catalog} from './course.mjs';
 import {progress} from './worker.mjs';
+import {locations,stages,pageSteps} from './architecture.mjs';
+for(const slide of lesson.slides)assert.ok(Object.hasOwn(pageSteps,slide.id),'Missing architecture mapping: '+slide.id);
+for(const box of [...Object.values(locations).map(x=>x.box),...stages.map(x=>x.box)]){assert.equal(box.length,4);assert.ok(box.every(v=>v>=0&&v<=1));assert.ok(box[0]+box[2]<=1&&box[1]+box[3]<=1);}
+assert.equal(stages.length,5);assert.deepEqual(['mask','weights','values'].map(id=>pageSteps[id]),[2,3,4]);
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-12,`${a} != ${b}`);
 const t=attention();
 assert.deepEqual(t.dot[2],[1,1,2]);

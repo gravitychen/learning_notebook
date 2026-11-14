@@ -8,3 +8,5 @@
 - Original Transformer paper section 3.2 grounds scaled dot products, learned projections and self/cross-attention sources. Teaching matrices are untrained; Q=K is an intentional fixture choice, not a model constraint.
 - Mobile SVGs need reflow into taller diagrams; reducing the desktop figure made labels too small. Page dots use explicit circles rather than shrinking to narrow bars.
 - Progress caches must be scoped to verified user identity; discard in-memory pending edits on an account switch and retain the original account's cache for retry.
+- Learner requests the original Transformer architecture as the persistent reference. Use Figure 1 for module location, Figure 2 for nested computation; keep the causal example anchored to Decoder masked self-attention and expose encoder/cross comparison on its existing slide.
+- Distinguish Figure 2's pre-projection input labels from this lesson's projected single-head Q/K/V; distinguish attention SoftMax from the vocabulary Softmax atop Figure 1. Single-head O still needs concatenation/output projection before leaving the large attention block.

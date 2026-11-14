@@ -8,3 +8,4 @@
 - Browser checks covered 1440, 834, 390 and 320 pixel widths, every slide's page/SVG bounds, query controls, mask, focus, previous/next steps, tree and quiz. Visually reviewed desktop and mobile screenshots.
 - Mocked cloud tests cover failed saves, retry, account isolation and reload persistence; real cross-device sign-in is not automated.
 - Source ready for private Sites publication and notebook synchronization; publication receipts and exact source diff audit are kept outside the repository.
+- Architecture revision: downloaded and attributed unmodified original Figures 1–2, added normalized highlight overlays and input/output context, and connected numerical substeps to Figure 2. Test and publication receipts remain outside the repository.

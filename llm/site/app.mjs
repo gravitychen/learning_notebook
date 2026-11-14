@@ -1,6 +1,7 @@
 import { lesson, catalog } from './course.mjs';
 import { renderDiagram } from './visuals.mjs';
 import { renderLab, renderQuiz } from './labs.mjs';
+import { renderArchitecture } from './architecture.mjs';
 const $ = id => document.getElementById(id);
 let page = 0, records = {}, pending = {}, scope = null, syncing = false;
 const statuses = ['unjudged','review','learn','partial','known'];
@@ -29,6 +30,7 @@ function renderPage(scroll = false) {
   $('slide-kicker').textContent=slide.kicker;$('slide-title').textContent=slide.title;$('slide-lead').textContent=slide.lead;
   $('slide-equation').textContent=slide.equation;$('slide-caption').textContent=slide.caption;
   $('slide-topic').textContent='LLM / Q、K、V';$('page-number').textContent=`${page+1} / ${lesson.slides.length}`;
+  renderArchitecture($('architecture'),slide.id);
   if(slide.visual==='lab')renderLab($('slide-visual'));else if(slide.visual==='quiz')renderQuiz($('slide-visual'));else renderDiagram(slide.visual,$('slide-visual'));
   $('previous').disabled=page===0;$('next').disabled=page===lesson.slides.length-1;
   $('next').textContent=page===lesson.slides.length-1?'本讲结束':'下一页 →';

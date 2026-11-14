@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="LLM 交互讲义：一次学习一个知识点，从直觉图解到公式与 Python。"><title>LLM · Learning Notebook</title><link rel="stylesheet" href="style.css"><script type="module" src="app.mjs"></script></head>
+<body>
+<header class="toolbar"><a class="brand" href="./">LEARNING <span>/ NOTEBOOK</span></a><nav aria-label="学习导航"><button id="open-tree">知识树</button><a href="https://admm-learning-lab-gravity.cutetoucan2.chatgpt.site" target="_blank" rel="noopener">ADMM ↗</a><a href="https://github.com/gravitychen/learning_notebook/tree/main/llm" target="_blank" rel="noopener">资料 ↗</a></nav></header>
+<main>
+<div class="lesson-heading"><span id="lesson-id" class="eyebrow"></span><span id="lesson-status">一次一个知识点</span></div>
+<article id="slide" class="slide" aria-labelledby="slide-title" tabindex="-1">
+<div class="slide-heading"><p id="slide-kicker" class="eyebrow"></p><h1 id="slide-title"></h1><p id="slide-lead"></p></div>
+<div id="slide-visual" class="slide-visual"></div>
+<div id="slide-equation" class="equation"></div><p id="slide-caption" class="caption"></p>
+<div class="slide-bottom"><span id="slide-topic"></span><label>本知识点 <select id="mastery"><option value="unjudged">未判断</option><option value="review">待复习</option><option value="learn">需要重学</option><option value="partial">部分理解</option><option value="known">已掌握</option></select></label><span id="page-number" aria-live="polite"></span></div>
+</article>
+<nav class="pager" aria-label="讲义翻页"><button id="previous">← 上一页</button><div id="page-dots"></div><button id="next" class="primary">下一页 →</button></nav>
+<details id="details" class="notes"><summary>为什么这样计算？查看推导与 Python</summary><div id="details-content"></div></details>
+<footer><span id="sync-status" role="status">正在读取学习记录…</span><span>图解 → 含义 → 公式 → 代码 → 核对</span></footer>
+</main>
+<dialog id="tree-dialog" aria-labelledby="tree-title"><div class="dialog-heading"><h2 id="tree-title">LLM 知识树</h2><button id="close-tree" aria-label="关闭知识树">关闭 ×</button></div><p class="muted">当前只生成一个知识点。学完后告诉我，再制作下一个；未生成节点仅用于查看学习范围。</p><div id="tree"></div><p id="tree-count" class="muted"></p></dialog>
+</body></html>

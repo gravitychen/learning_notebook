@@ -9,3 +9,5 @@
 - Mocked cloud tests cover failed saves, retry, account isolation and reload persistence; real cross-device sign-in is not automated.
 - Source ready for private Sites publication and notebook synchronization; publication receipts and exact source diff audit are kept outside the repository.
 - Architecture revision: downloaded and attributed unmodified original Figures 1–2, added normalized highlight overlays and input/output context, and connected numerical substeps to Figure 2. Test and publication receipts remain outside the repository.
+- Overview revision: added nine end-to-end feature-flow slides, default A1-1 route, progressive embedding reveal and clickable token generation. Existing A1-2 QKV route and state remain available.
+- Verified 80 slide/viewport combinations, every overview Figure 1 location, generated-prefix transitions, probability sums, feature-position addition, lesson tabs/tree and separate authenticated mastery records. Fresh mobile starts with a compact original-map disclosure.

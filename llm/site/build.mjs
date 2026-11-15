@@ -1,6 +1,6 @@
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 const files={'/':['index.html','text/html; charset=utf-8'],'/index.html':['index.html','text/html; charset=utf-8'],'/style.css':['style.css','text/css; charset=utf-8']};
-for(const name of ['app','course','visuals','labs','math','architecture'])files['/'+name+'.mjs']=[name+'.mjs','text/javascript; charset=utf-8'];
+for(const name of ['app','course','visuals','labs','math','architecture','journey'])files['/'+name+'.mjs']=[name+'.mjs','text/javascript; charset=utf-8'];
 const assets={};for(const [url,[file,type]]of Object.entries(files))assets[url]={body:await readFile(new URL(file,import.meta.url),'utf8'),type};
 for(const name of ['transformer-figure1','attention-figure2','multihead-figure2'])assets['/assets/'+name+'.png']={body:(await readFile(new URL('assets/'+name+'.png',import.meta.url))).toString('base64'),type:'image/png',binary:true};
 const source=await readFile(new URL('worker.mjs',import.meta.url),'utf8');
@@ -16,4 +16,4 @@ const output=source+'\nconst assets='+JSON.stringify(assets)+`;\nexport default 
 } };`;
 await mkdir(new URL('dist/server/',import.meta.url),{recursive:true});await mkdir(new URL('dist/.openai/',import.meta.url),{recursive:true});
 await writeFile(new URL('dist/server/index.js',import.meta.url),output);await writeFile(new URL('dist/.openai/hosting.json',import.meta.url),await readFile(new URL('.openai/hosting.json',import.meta.url)));
-console.log('Built one-lesson Worker and authenticated learning records.');
+console.log('Built overview/QKV lessons and authenticated learning records.');

@@ -24,7 +24,7 @@
 ## 主题
 
 - [ADMM：图像去模糊与优化](admm/README.md) · [在线学习](https://admm-learning-lab-gravity.cutetoucan2.chatgpt.site) · [Python 实现](admm/solver.py)
-- [LLM：模型训练、Agent 与 Harness](llm/README.md) · [在线 PPT 讲义](https://llm-learning-notebook-gravity.cutetoucan2.chatgpt.site) · 第一讲：Q、K、V 怎样完成一次信息汇总；其余知识点按学习进度生成
+- [LLM：模型训练、Agent 与 Harness](llm/README.md) · [在线 PPT 讲义](https://llm-learning-notebook-gravity.cutetoucan2.chatgpt.site/#A1-1/0) · 先看 Transformer 从文字到输出的 9 页总流程，再进入 QKV 细节；其余知识点按学习进度生成
 
 ## ADMM 当前版本
 

@@ -2,7 +2,7 @@
 
 学习目标：理解大语言模型如何获得语言、指令、推理和工具使用能力，以及这些能力怎样与运行系统结合，成为 Codex、Claude Code 这类能持续做事的 Agent。
 
-[进入在线 PPT 讲义：Q、K、V 怎样完成一次信息汇总](https://llm-learning-notebook-gravity.cutetoucan2.chatgpt.site) · [讲义源码与本地运行](site/README.md)。目前仅生成 A1-2 中的 QKV 入门：11 页图解、五小步数值实验、Python 对照与理解检查。其他内容只保留目录，学完后再请求生成；不会自动判断已经掌握。线上掌握状态按登录身份保存，本地预览只暂存于浏览器。
+[进入在线 PPT 讲义：Transformer 从文字到输出](https://llm-learning-notebook-gravity.cutetoucan2.chatgpt.site/#A1-1/0) · [讲义源码与本地运行](site/README.md)。先看 A1-1 的 9 页总流程：从 I like cats 的文字、向量、Encoder/Decoder 到逐 token 生成；再按需切换 A1-2 的 QKV 细节、五小步实验和 Python 对照。每页对应原论文主架构图。其他内容只保留目录，学完后再请求生成；两讲掌握状态独立保存，不自动判定已经掌握。生成流程使用固定教学概率，不运行真实翻译网络。
 
 范围以 Transformer 之后为主；架构只做按需复习。当前是学习大纲，所有节点的掌握状态均为“未判断”，不预设已经掌握，也不代表完全不会。
 

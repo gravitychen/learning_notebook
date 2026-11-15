@@ -4,10 +4,17 @@ import {attention,fixture} from './math.mjs';
 import {lesson,catalog} from './course.mjs';
 import {progress} from './worker.mjs';
 import {locations,stages,pageSteps} from './architecture.mjs';
+import {introLesson,journeyLocations,embedding,position,positioned,generationFrames} from './journey.mjs';
+assert.equal(introLesson.slides.length,9);assert.equal(introLesson.node,'A1-1');
+for(const slide of introLesson.slides)assert.ok(journeyLocations[slide.id],'Missing journey architecture mapping');
+assert.equal(new Set(introLesson.slides.map(s=>s.id)).size,9);
+positioned.forEach((row,i)=>row.forEach((v,d)=>near(v,embedding[i][d]+position[i][d])));
+let generated=[];generationFrames.forEach((frame,i)=>{assert.deepEqual(frame.prefix,['起始',...generated]);near(frame.candidates.reduce((sum,[,p])=>sum+p,0),1);assert.equal(frame.candidates[0][1],Math.max(...frame.candidates.map(c=>c[1])));if(i<3)generated.push(frame.candidates[0][0]);});
+assert.equal(generated.join(''),'我喜欢猫');assert.equal(generationFrames.at(-1).candidates[0][0],'结束');
 for(const slide of lesson.slides)assert.ok(Object.hasOwn(pageSteps,slide.id),'Missing architecture mapping: '+slide.id);
 for(const box of [...Object.values(locations).map(x=>x.box),...stages.map(x=>x.box)]){assert.equal(box.length,4);assert.ok(box.every(v=>v>=0&&v<=1));assert.ok(box[0]+box[2]<=1&&box[1]+box[3]<=1);}
 assert.equal(stages.length,5);assert.deepEqual(['mask','weights','values'].map(id=>pageSteps[id]),[2,3,4]);
-const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-12,`${a} != ${b}`);
+function near(a,b){assert.ok(Math.abs(a-b)<1e-12,`${a} != ${b}`);}
 const t=attention();
 assert.deepEqual(t.dot[2],[1,1,2]);
 assert.deepEqual(t.A[0],[1,0,0]);
@@ -34,5 +41,7 @@ assert.equal((await progress(req('alice'),{})).status,503);
 assert.equal((await progress(req('alice','PUT',{id:'A1-2',status:'partial'}),env)).status,200);
 const alice=await (await progress(req('alice'),env)).json(),bob=await (await progress(req('bob'),env)).json();
 assert.equal(alice.records['A1-2'].status,'partial');assert.deepEqual(bob.records,{});assert.notEqual(alice.scope,bob.scope);
+assert.equal((await progress(req('alice','PUT',{id:'A1-1',status:'learn'}),env)).status,200);
+const both=await (await progress(req('alice'),env)).json();assert.equal(both.records['A1-1'].status,'learn');assert.equal(both.records['A1-2'].status,'partial');
 for(const [request,status] of [[req('alice','PUT',{id:'A2-2',status:'known'}),400],[req('alice','PUT',{id:'A1-2',status:'known'},{Origin:'https://evil.test'}),403],[req('alice','PUT','{'),400],[req('alice','PUT','x'.repeat(513)),413],[req('alice','PUT','x',{'Content-Type':'text/plain'}),415],[req('alice','POST'),405]])assert.equal((await progress(request,env)).status,status);
 console.log('Attention math, masks, shapes, displayed Python snippets, catalog and authenticated storage checks passed.');

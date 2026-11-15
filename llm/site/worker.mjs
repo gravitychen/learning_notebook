@@ -17,6 +17,6 @@ export async function progress(request, env) {
   let size=0;const chunks=[];while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>512){await reader.cancel();return json({error:'Body too large'},413);}chunks.push(value);}
   const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
   let data;try{data=JSON.parse(new TextDecoder().decode(bytes));}catch{return json({error:'Invalid JSON'},400);}
-  if(!data||data.id!=='A1-2'||!['unjudged','review','learn','partial','known'].includes(data.status))return json({error:'Invalid lesson or status'},400);
+  if(!data||!['A1-1','A1-2'].includes(data.id)||!['unjudged','review','learn','partial','known'].includes(data.status))return json({error:'Invalid lesson or status'},400);
   const record={status:data.status,updatedAt:Date.now()};await env.BUCKET.put(prefix+data.id,JSON.stringify(record));return json(record);
 }

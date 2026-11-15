@@ -1,4 +1,5 @@
 // Boxes use normalized coordinates on the unmodified original paper figures.
+import {journeyLocations} from './journey.mjs';
 export const locations={
   decoder:{label:'Decoder · Masked Multi-Head Attention',box:[.553,.568,.249,.096],input:'Output Embedding + Positional Encoding（更高层则来自上一层 Decoder）',output:'多头拼接与输出投影 → Add & Norm → Cross-attention',meaning:'从已经可见的前缀中读取信息。当前带因果掩码的数值实验，固定对应这个框。'},
   encoder:{label:'Encoder · Multi-Head Attention',box:[.197,.591,.249,.075],input:'Input Embedding + Positional Encoding（更高层则来自上一层 Encoder）',output:'多头拼接与输出投影 → Add & Norm → Feed Forward',meaning:'输入序列内部交换信息，通常可以双向读取。关闭实验掩码能说明可见范围变化，但不等于运行完整 Encoder。'},
@@ -25,6 +26,7 @@ function figure(file,alt,box,highlight=true){
   setBox(highlight?box:null);return {frame,setBox};
 }
 export function renderArchitecture(host,slideId){
+  if(journeyLocations[slideId]){renderJourneyArchitecture(host,slideId);return;}
   const step=pageSteps[slideId];let location=slideId==='architecture'?comparisonLocation:'decoder';
   host.innerHTML='<p class="eyebrow">原论文 / 架构导航</p><h2 id="architecture-position"></h2><p id="architecture-step" class="architecture-step" aria-live="polite"></p><details class="architecture-map"><summary>在原论文主图中定位（Figure 1）</summary><div id="architecture-main"></div><div id="architecture-choices" class="architecture-choices"></div><p id="architecture-meaning"></p><dl><dt>从哪里来</dt><dd id="architecture-input"></dd><dt>往哪里去</dt><dd id="architecture-output"></dd></dl><details id="architecture-inner"><summary>进入红框内部：原论文 Figure 2</summary><div id="architecture-detail"></div><p id="architecture-detail-note"></p></details><p class="architecture-boundary">单头 O 还需多头拼接与输出投影，才到达 Figure 1 大框的出口。主图 N× 表示层数；本讲公式 N 表示位置数。</p><p class="paper-credit">Vaswani et al., Attention Is All You Need (2017), Figures 1–2；红框为本讲添加。<a href="https://arxiv.org/html/1706.03762v7#S3" target="_blank" rel="noopener">原论文 ↗</a> · <a href="assets/transformer-figure1.png" target="_blank" rel="noopener">主图大图 ↗</a></p></details>';
   const $=id=>host.querySelector('#'+id),map=host.querySelector('.architecture-map');map.open=mapOpen;map.ontoggle=()=>{mapOpen=map.open;};
@@ -43,6 +45,14 @@ export function renderArchitecture(host,slideId){
   };
   locate();setStep(step);host.setStep=setStep;
   if(slideId==='score'){$('architecture-step').textContent+=' → Scale · ÷ √d_k';detail.setBox([.025,.559,.68,.28]);}
+}
+function renderJourneyArchitecture(host,id){
+  const data=journeyLocations[id];host.dataset.location=id;host.dataset.step='journey';
+  host.innerHTML='<p class="eyebrow">原论文 / 现在走到哪里</p><h2 id="architecture-position"></h2><p id="architecture-step" class="architecture-step"></p><details class="architecture-map"><summary>展开原论文主架构图（Figure 1）</summary><div id="architecture-main"></div><dl><dt>从哪里来</dt><dd id="architecture-input"></dd><dt>往哪里去</dt><dd id="architecture-output"></dd></dl><p class="paper-credit">Vaswani et al., Attention Is All You Need (2017), Figure 1；红框为讲义添加。<a href="https://arxiv.org/html/1706.03762v7#S3" target="_blank" rel="noopener">原论文 ↗</a> · <a href="assets/transformer-figure1.png" target="_blank" rel="noopener">主图大图 ↗</a></p></details>';
+  const $=id=>host.querySelector('#'+id),map=host.querySelector('.architecture-map');map.open=mapOpen;map.ontoggle=()=>{mapOpen=map.open;};
+  $('architecture-position').textContent=data.label;$('architecture-step').textContent=data.meaning;
+  $('architecture-input').textContent=data.input;$('architecture-output').textContent=data.output;
+  $('architecture-main').append(figure('transformer-figure1','Transformer 原论文主架构图；红框对应当前讲解步骤。',data.box).frame);
 }
 export function locateLabStep(phase){
   const host=document.getElementById('architecture');if(host?.setStep)host.setStep(phase);
